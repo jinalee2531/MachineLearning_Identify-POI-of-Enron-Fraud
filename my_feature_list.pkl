@@ -1,0 +1,14 @@
+(lp0
+S'poi'
+p1
+aS'expenses'
+p2
+aS'from_poi_to_this_person'
+p3
+aS'other'
+p4
+aS'shared_receipt_with_poi'
+p5
+aS'to_poi_ratio'
+p6
+a.
