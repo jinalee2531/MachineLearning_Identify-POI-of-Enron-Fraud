@@ -39,7 +39,6 @@ def update_features_list(df_org, features_to_exclude):
     features_list_no_label = [col for col in df_org.columns if col not in features_to_exclude]
 
     # locate 'poi' to the first index of the features_list
-    #features_list=set(['poi'])
     features_list = ['poi']
     features_list.extend(features_list_no_label)
     print "from ->", features_list_no_label
@@ -66,8 +65,11 @@ print "Data with features selected has %d features and %d rows." %(df.shape[1],d
 
 import numpy as np
 
-###### filling missing value with 0
+
 def NaN_to_Zero(data):
+	"""
+	filling missing value with 0
+	"""
     if data=="NaN": return 0
     else : return data
 
@@ -88,8 +90,11 @@ def processing_nan(df, col_name):
 
 from collections import defaultdict
 
-###### do statstics of missing values of input dataset
+
 def exploring_missing_values(df):
+	"""
+	Do statstics of missing values of input dataset
+	"""
     print "**** Missing Values Exploration*****\n"
     missing_dict = defaultdict(dict)
     for col in df.columns:
@@ -123,8 +128,11 @@ exploring_features(df[features_list])
 col_names=["total_payments", "expenses", "from_messages",            "long_term_incentive", "restricted_stock","salary",           "to_messages","total_stock_value", "loan_advances"]
 
 ###### Methods to explore outliers
-### print out index, 'poi' label, and value for max and min record of each feature.
+
 def identifying_outliers(df, col_names):
+	"""
+	Print out index, 'poi' label, and value for max and min record of each feature.
+	"""
     for col_name in col_names:
         idx_max = df[col_name].fillna(0).argmax()
         idx_min = df[col_name].fillna(0).argmin()
@@ -138,9 +146,6 @@ def identifying_outliers(df, col_names):
 identifying_outliers(df, col_names)
 
 
-# In[11]:
-
-#remove outlier : 'TOTAL'
 print df.shape
 df=df.drop(["TOTAL"])
 print df.shape
@@ -157,19 +162,10 @@ features_to_exclude.extend(['deferral_payments', 'director_fees','loan_advances'
 features_list=update_features_list(df, features_to_exclude)
 print features_list
 
-#df_selected_features=df[features_list]
 df_selected=df[features_list]
 
-#print df.shape,df_selected_features.shape,df_selected.shape
-
-
-# In[13]:
 
 ### re-exploring after removing outlier
-# exploring_features(df_selected)
-
-
-# In[14]:
 
 ### processing missing rows in features regarding mail : fill with median values
 if True:
@@ -216,14 +212,17 @@ if True:
 
 # # Task 3: Create new feature(s)
 
-# In[15]:
+
 
 ### Store to my_dataset for easy export below.
 
-### features_list is a list of strings, each of which is a feature name.
-### The first feature must be "poi".
+
 my_dataset=None
 def create_features_labels(df_selected, features_list):
+	"""
+	features_list is a list of strings, each of which is a feature name.
+	The first feature must be 'poi'.
+	"""
     my_dataset = df_selected.T.to_dict()
     print features_list
     #print my_dataset[my_dataset.keys()[0]]
@@ -237,11 +236,12 @@ def create_features_labels(df_selected, features_list):
 my_dataset,labels, features=create_features_labels(df_selected,features_list)
 
 
-# In[16]:
-
-##### getting importance of features
 def feature_importance(features,labels):
-    features_low_importance=[]
+	"""
+	Getting importance of features
+	"""
+    
+	features_low_importance=[]
     from sklearn.tree import DecisionTreeClassifier
     clf = DecisionTreeClassifier(class_weight='balanced')
     print clf
@@ -300,7 +300,6 @@ s= StratifiedShuffleSplit(labels, n_iter=3, test_size=.3, random_state=0)
 # >  http://scikit-learn.org/stable/modules/pipeline.html
 # > Provided to give you a starting point. Try a variety of classifiers.
 
-# In[31]:
 
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
@@ -312,9 +311,13 @@ from sklearn.metrics import classification_report as rp
 precisions = []
 recalls = []
 
-### creating scoring function
+
 def my_scorer_func (test_label, prediction):
-    precision = precision_score(test_label, prediction, labels=None, pos_label=1,                                average='binary', sample_weight=None)
+	"""
+	Creating scoring function.
+	"""
+    
+	precision = precision_score(test_label, prediction, labels=None, pos_label=1,                                average='binary', sample_weight=None)
     recall = recall_score(test_label, prediction, labels=None, pos_label=1,                          average='binary', sample_weight=None)
     score = 1/(((1/precision)+(1/recall))/2)
     
@@ -323,30 +326,25 @@ def my_scorer_func (test_label, prediction):
     ### put weight if both precision and recall are over 0.3
     if precision >.3 and recall>.3:
         score *= 100
-    #print "precision: %.4f, recall: %.4f" %(precision, recall)
-   
+		
     return score
 
 my_scorer = make_scorer(my_scorer_func, greater_is_better= True)
 
 
-# In[32]:
-
-### build classification a model for each input parameter.
-### and find the best model with the best score.
-
 def run_training(algo, parameters, scorer=my_scorer):
-    clf = GridSearchCV(algo, parameters, scoring =scorer, cv = s)                               
+    """
+	build classification a model for each input parameter,
+	and find the best model with the best score.
+	"""
+	clf = GridSearchCV(algo, parameters, scoring =scorer, cv = s)                               
     clf.fit(features, labels)
 
     print
     print "Estimator: ", clf.best_estimator_
-    #print
-    #print clf.best_params_
     print
-    #print "mean score: %.4f" %(clf.best_score_)
     
-    for result in clf.grid_scores_ :
+	for result in clf.grid_scores_ :
         m = result.mean_validation_score
         std = np.std(result.cv_validation_scores)
         
@@ -355,8 +353,6 @@ def run_training(algo, parameters, scorer=my_scorer):
    
     return clf.best_estimator_    
 
-
-# In[33]:
 
 ##### Gaussain Naive Bayes
 
@@ -402,33 +398,6 @@ best_clf = run_training(algo, parameters, scorer=my_scorer)
 print "precision: %.4f, recall: %.4f" %(np.mean(precisions), np.mean(recalls))
 
 
-# In[35]:
-"""
-###### Visualize decision tree
-
-from IPython.display import Image
-from sklearn.externals.six import StringIO  
-from sklearn import tree
-import pydot
-import os
-
-
-with open("enron.dot", 'w') as f:
-    f = tree.export_graphviz(best_clf, out_file=f)
-os.unlink('enron.dot')
-
-dot_data = StringIO()
-
-tree.export_graphviz(best_clf, out_file=dot_data,  
-                         feature_names=features_list[1:],
-                         class_names = ['non-poi','poi'],
-                         filled=True, rounded=True,  
-                         special_characters=True)  
-graph = pydot.graph_from_dot_data(dot_data.getvalue())  
-Image(graph.create_png())  
-"""
-
-# In[36]:
 
 ##### classifer built on PCA ####
 parameters = dict(reduce_dim__n_components=[2, 5, 10]
@@ -450,7 +419,6 @@ best_clf = run_training(clf, parameters, scorer=my_scorer)
 print "precision: %.4f, recall: %.4f" %(np.mean(precisions), np.mean(recalls))
 
 
-# In[37]:
 
 ##### Random Forest
 
@@ -470,7 +438,6 @@ best_clf = run_training(algo, parameters, scorer=my_scorer)
 print "precision: %.4f, recall: %.4f" %(np.mean(precisions), np.mean(recalls))
 
 
-# In[38]:
 
 ##### classifer built on PCA ####
 parameters = dict(reduce_dim__n_components=[2, 5, 10]
@@ -489,7 +456,6 @@ run_training(clf, parameters, scorer=my_scorer)
 print "precision: %.4f, recall: %.4f" %(np.mean(precisions), np.mean(recalls))
 
 
-# In[39]:
 
 ##### ADABOOST
 
@@ -539,4 +505,3 @@ print best_clf
 
     
 dump_classifier_and_data(best_clf, my_dataset, features_list)
-
