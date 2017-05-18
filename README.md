@@ -6,5 +6,4 @@ The classes of the dataset, Person of Interest (PoI), were labeled True for peop
 
 
 - [Report] (https://github.com/jinalee2531/MachineLearning_Identify-POI-of-Enron-Fraud/blob/master/Report.pdf)
-- [Source code with description] (https://drive.google.com/open?id=0B8LJHt38M0O7RmRBT3o4WEdqQm8)
 
